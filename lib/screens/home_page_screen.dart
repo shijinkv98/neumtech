@@ -1,14 +1,14 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:medfeed/helper/constants.dart';
-import 'package:medfeed/screens/health_tips_screen.dart';
-import 'package:medfeed/widget/custome_tabview.dart';
+import 'package:neumtech/helper/constants.dart';
+import 'package:neumtech/screens/details_screen.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:provider/provider.dart';
-import 'package:medfeed/blocs/home_bloc.dart';
+import 'package:neumtech/blocs/home_bloc.dart';
 
 final TextStyle style = TextStyle(
-    color: white,
+    color: Colors.black,
     fontWeight: FontWeight.w700,
     fontSize: 14,
     letterSpacing: 0.8);
@@ -27,16 +27,14 @@ class _NewsFeedScreenState extends State<HomePageScreen> {
 
   @override
   void initState() {
+    Provider.of<HomeBloc>(context, listen: false).getHomeData(context);
     super.initState();
 
   }
   @override
   Widget build(BuildContext context) {
-    Provider.of<HomeBloc>(context, listen: false).getHomeData(context);
-    return  Consumer<HomeBloc>(
-        builder: (context, homeBloc, child) => ModalProgressHUD(
-        inAsyncCall: homeBloc.isLoading,
-        child:getAppBar(context, 'MedFeed',homeBloc.dataHome.bookmarkCount.toString(),getBody())));
+
+    return getAppBar(context, 'Neumtech',getBody());
   }
   Widget getBody(){
     return Consumer<HomeBloc>(
@@ -46,139 +44,65 @@ class _NewsFeedScreenState extends State<HomePageScreen> {
           color: primaryBg,
          child: SingleChildScrollView(
            child: Column(
+             mainAxisAlignment: MainAxisAlignment.center,
+             crossAxisAlignment: CrossAxisAlignment.start,
              children: [
-               getTopContainer(homeBloc),
+               getBannerSlider(homeBloc),
+               Padding(
+                 padding: const EdgeInsets.only(left: 15,top: 15,),
+                 child: Text('Top Items',style: subTitile,),
+               ),
                getMiddleContainer(homeBloc),
+               Padding(
+                 padding: const EdgeInsets.only(left: 15,top: 15,),
+                 child: Text('Featured Items',style: subTitile,),
+               ),
+               getTopContainer(homeBloc),
                SizedBox(height: 20),
-               _tabSection(context,homeBloc)
+               // _tabSection(context,homeBloc)
              ],
            ),
          ),
     )));
   }
-  int tbPosition = 0;
-  Widget _tabSection(BuildContext context,HomeBloc homeBloc) {
-    return DefaultTabController(
-      length: 2,
-
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Container(
-            child:
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child:
-                TabBar(
-                  isScrollable: true,
-                  indicator: UnderlineTabIndicator(
-                    borderSide: BorderSide(width: 3.0, color: primaryColor),
-                    insets: EdgeInsets.only(top: 10),
-                  ),
-                  indicatorSize: TabBarIndicatorSize.label ,
-                  indicatorColor:primaryColor,
-                  labelColor: Colors.black,
-                  automaticIndicatorColorAdjustment: true,
-                  unselectedLabelColor: Colors.grey,
-                  indicatorPadding:EdgeInsets.only(left: 5,right: 5) ,
-
-                  tabs: [
-                    Container(
-                      height: 30,width: 100,
-                      child: Center(child: Text(homeBloc.article[0].name))),
-                    Container(
-                      height: 30,width: 100,
-                      child: Center(child: Text(homeBloc.article[1].name))),
-                   ],
-                ),
-              ),
-            ),
-
-          ),
-          Container(
-            height: 250,
-            child: TabBarView(
-                children: [
-              Container(
-                height:150,
-                margin: EdgeInsets.all(30),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10))
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  child: FadeInImage.assetNetwork(
-                    fit: BoxFit.fill,
-                    placeholder: homeBloc.article[0].articleList[0].image,
-                    image:homeBloc.article[0].articleList[0].image,
-                  ),
-                ),
-              ),
-                  Container(
-                    height:150,
-                    margin: EdgeInsets.all(30),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(10))
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                      child: FadeInImage.assetNetwork(
-                        fit: BoxFit.fill,
-                        placeholder: homeBloc.article[0].articleList[1].image,
-                        image:homeBloc.article[0].articleList[0].image,
+  Widget getTopContainer(HomeBloc homeBloc){
+    return Container(
+      height: 150,
+        margin: EdgeInsets.only(top: 10),
+        width: MediaQuery.of(context).size.width,
+      child:ListView.builder(
+        reverse: true,
+          itemCount:homeBloc.listData.length,
+          scrollDirection: Axis.horizontal,
+          physics: ScrollPhysics(),
+          shrinkWrap: true,
+          itemBuilder: (BuildContext context, int index){
+            return Padding(
+              padding: const EdgeInsets.only(left: 2,),
+              child: InkWell(
+                onTap: (){
+                  nextPagePush(context, FeaturedScreen(id: homeBloc.listData[index].animeId,name: homeBloc.listData[index].animeName,image: homeBloc.listData[index].animeImg,title: 'Featured Items',));
+                },
+                child: Card(
+                  elevation: 5,
+                  child: Container(
+                    height: 150,
+                    width: 150,
+                    child:Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                        elevation: 5,
+                        child: FadeInImage.assetNetwork(
+                          fit: BoxFit.fitWidth,
+                          height: 120,
+                          width: 120,
+                          placeholder: 'assets/load.png',
+                          image:homeBloc.listData[index].animeImg,
+                        ),
                       ),
                     ),
                   ),
-
-
-            ]),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget getTab(HomeBloc homeBloc){
-    CustomTabView(
-      initPosition: tbPosition,
-      itemCount: homeBloc.banner.length,
-      tabBuilder: (context, index) => Tab(text: homeBloc.banner[index].sId),
-      pageBuilder: (context, index) =>
-          _listview(homeBloc),
-      onPositionChange: (index) {
-        print('current position: $index');
-        // initPosition = index;
-      },
-      onScroll: (position) => print('$position'),
-    );  }
-
-  Widget _listview(HomeBloc homeBloc) => ListView.builder(
-      itemBuilder: (context, index) =>
-          FadeInImage.assetNetwork(
-            fit: BoxFit.fill,
-            placeholder: homeBloc.banner[index].image,
-            image:homeBloc.banner[index].image,
-          ),
-      itemCount: homeBloc.article.length);
-
-  Widget getTopContainer(HomeBloc homeBloc){
-    return Container(
-        height: 200,
-        margin: EdgeInsets.only(top: 15),
-        width: MediaQuery.of(context).size.width,
-      child:ListView.builder(
-          itemCount: homeBloc.banner.length,
-          scrollDirection: Axis.horizontal,
-          itemBuilder: (BuildContext context, int index){
-            return Container(
-              height: 200,
-              width: MediaQuery.of(context).size.width,
-              child: FadeInImage.assetNetwork(
-                fit: BoxFit.fill,
-                placeholder: homeBloc.banner[index].image,
-                image:homeBloc.banner[index].image,
+                ),
               ),
             );
           })
@@ -192,15 +116,16 @@ class _NewsFeedScreenState extends State<HomePageScreen> {
     double aspect = (width / 2) / height;
     return Container(
 
-      margin: EdgeInsets.only(left: 33, right: 33, top: 33),
+      margin: EdgeInsets.only(left: 10, right: 10, top: 10),
       child:
       GridView.builder(
-          itemCount: homeBloc.category.length,
+          // itemCount: 9,
+          itemCount: homeBloc.listData.length,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              mainAxisExtent: 125,
+              mainAxisExtent: 110,
               childAspectRatio: 0.8,
-              mainAxisSpacing: 9,
+              mainAxisSpacing: 2,
               crossAxisSpacing: 9),
           semanticChildCount: 3,
           shrinkWrap: true,
@@ -208,10 +133,10 @@ class _NewsFeedScreenState extends State<HomePageScreen> {
           itemBuilder: (BuildContext ctx, index) {
             return   InkWell(
               onTap: (){
-                nextPagePush(context, HealthTipsScreen());
+               nextPagePush(context, FeaturedScreen(id: homeBloc.listData[index].animeId,name: homeBloc.listData[index].animeName,image: homeBloc.listData[index].animeImg,title: 'Top Items',));
+
               },
               child: Container(
-                height: 80,
                 child: Column(
                   children: [
                     Card(
@@ -220,16 +145,18 @@ class _NewsFeedScreenState extends State<HomePageScreen> {
                         borderRadius: BorderRadius.circular(15.0),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(20.0),
+                        padding: const EdgeInsets.all(10.0),
                         child:
                         FadeInImage.assetNetwork(
                           fit: BoxFit.fill,
-                          placeholder: homeBloc.category[index].image,
-                          image:homeBloc.category[index].image,
+                          height: 80,
+                          width: 100,
+                          placeholder: 'assets/load.png',
+                          image:homeBloc.listData[index].animeImg,
                         ),
                       ),
                     ),
-                    Text('MedArticle',style: subTitile,)
+                    // Text('MedArticle',style: subTitile,)
                   ],
                 ),
               ),
@@ -238,5 +165,53 @@ class _NewsFeedScreenState extends State<HomePageScreen> {
     );
   }
 
+  Widget getBannerSlider(HomeBloc homeBloc) {
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: CarouselSlider(
+          options: CarouselOptions(
+            enlargeCenterPage: true,
+            autoPlay: homeBloc.listData.length > 1 ? true : false,
+            autoPlayCurve: Curves.ease,
+            enableInfiniteScroll: homeBloc.listData.length > 1 ? true : false,
+            autoPlayAnimationDuration: Duration(milliseconds: 800),
+            viewportFraction: 1.0,
+          ),
+          items: homeBloc.listData.map((i) {
+            return Builder(
+              builder: (BuildContext context) {
+                return  InkWell(
+                    onTap: (){},
+                    child: getImageBanner(i.animeImg));
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget getImageBanner(String url) {
+    return Container(
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        height: 150,
+        child: FadeInImage.assetNetwork(
+          imageErrorBuilder: (BuildContext context, Object exception, StackTrace stackTrace)=>Image(
+            image: AssetImage("assets/load.png"),
+            fit: BoxFit.fitWidth,
+          ),
+          placeholder: 'assets/load.png',
+          image: url,
+          fit: BoxFit.fill,
+        ),
+      ),
+    );
+  }
+
 
 }
+
+

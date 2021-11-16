@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:medfeed/screens/home_page_screen.dart';
+import 'package:neumtech/screens/home_page_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:medfeed/blocs/home_bloc.dart';
+import 'package:neumtech/blocs/home_bloc.dart';
 
 
 void main() {
